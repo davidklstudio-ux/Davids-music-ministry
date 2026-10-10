@@ -102,7 +102,21 @@
   <script>
     const profileBadge=document.querySelector('.credential-icon');
     if(profileBadge)profileBadge.innerHTML='<img src="assets/david-profile.jpeg" alt="Karthick David">';
-    fetch('assets/youtube-playlists.json?v=3',{cache:'no-store'}).then(response=>response.json()).then(playlists=>{
+    const directDriveDownload=value=>{
+      if(!value||value==='#')return '#';
+      try{
+        const url=new URL(value,location.href);
+        if(url.hostname!=='drive.google.com')return value;
+        const id=url.pathname.match(/\/file\/d\/([^/]+)/)?.[1]||url.searchParams.get('id');
+        return id?`https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`:value;
+      }catch{return value}
+    };
+    document.querySelectorAll('#directory .catalog-item a, #featuredGrid .card-actions a:last-child').forEach(link=>{
+      const url=directDriveDownload(link.getAttribute('href')||'#');
+      link.href=url;
+      if(url==='#')link.dataset.emptyLink='';else delete link.dataset.emptyLink;
+    });
+    fetch('assets/youtube-playlists.json?v=4',{cache:'no-store'}).then(response=>response.json()).then(playlists=>{
       const escapeHtml=value=>value.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
       for(const playlist of playlists){
         const card=[...document.querySelectorAll('.directory-card')].find(item=>item.querySelector('.directory-top h3')?.textContent===playlist.category);
@@ -116,7 +130,7 @@
         const card=[...document.querySelectorAll('.directory-card')].find(item=>item.querySelector('.directory-top h3')?.textContent===playlist.category);
         if(!card)continue;
         card.querySelectorAll('.playlist-actions a:last-child').forEach((link,index)=>{
-          const url=playlist.videos[index].downloadUrl||'#';
+          const url=directDriveDownload(playlist.videos[index].downloadUrl||'#');
           link.href=url;
           if(url==='#')link.dataset.emptyLink='';else delete link.dataset.emptyLink;
         });
