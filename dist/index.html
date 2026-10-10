@@ -102,7 +102,7 @@
   <script>
     const profileBadge=document.querySelector('.credential-icon');
     if(profileBadge)profileBadge.innerHTML='<img src="assets/david-profile.jpeg" alt="Karthick David">';
-    fetch('assets/youtube-playlists.json').then(response=>response.json()).then(playlists=>{
+    fetch('assets/youtube-playlists.json?v=2',{cache:'no-store'}).then(response=>response.json()).then(playlists=>{
       const escapeHtml=value=>value.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
       for(const playlist of playlists){
         const card=[...document.querySelectorAll('.directory-card')].find(item=>item.querySelector('.directory-top h3')?.textContent===playlist.category);
