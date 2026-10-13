@@ -28,6 +28,8 @@
     .review-source{display:inline-block;margin-top:7px;color:var(--gold2);font-size:9px;font-weight:700}
     .premium-shop{margin-top:32px}.shop-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}.shop-head h3{margin:3px 0 0;font:800 19px Manrope,sans-serif}.shop-head p{margin:0;color:var(--muted);font-size:10px}.premium-products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.premium-product{min-width:0;padding:15px;border:1px solid #4a4026;border-radius:10px;background:#111317}.premium-product h4{min-height:38px;margin:0 0 10px;font:800 12px/1.45 Manrope,sans-serif}.product-price{margin:0 0 12px;color:var(--gold2);font:800 16px Manrope,sans-serif}.product-price span{color:var(--muted);font:500 10px "DM Sans",sans-serif}.premium-product .card-actions{flex-wrap:wrap}.premium-product .mini-btn{justify-content:center}.premium-product .product-cart{flex:1}.premium-product .product-cart[aria-pressed="true"]{border-color:#76632b;color:var(--gold2)}.cart-badge{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#e3bb4e;color:#16130a;font-size:9px;font-weight:800;line-height:17px}.light .premium-product{background:#fff;border-color:var(--line)}
     @media(max-width:640px){.premium-shop{margin-top:23px}.shop-head{align-items:flex-start;flex-direction:column;gap:4px}.premium-products{grid-template-columns:1fr}.premium-product h4{min-height:0}.premium-product .mini-btn{min-height:34px}}
+    .premium-cart-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.cart-summary-text{color:var(--gold2);font-size:11px;font-weight:800}.checkout-button{min-height:36px;padding-inline:13px}.checkout-button:disabled{opacity:.45;cursor:not-allowed;transform:none}.light .premium-cart-summary{border-color:var(--line)}
+    @media(max-width:640px){.premium-cart-summary{align-items:stretch;flex-direction:column}.checkout-button{width:100%}}
     @media(max-width:640px){.resource-tools{flex-wrap:wrap}.resource-tools select{flex:1;min-width:170px}.resource-count{order:3;width:100%;margin:0}}
   </style>
   <style>
@@ -69,7 +71,7 @@
         { title: "Davids Audio Style", badge: "35+ Audio Styles", description: "High-quality styles for gospel songs with studio drum-loop sync.", supported: "Live Nashville / Chennai drum loops & audio sync", tags: ["Audio Styles (.aus)", "Live drum groove tracking", "140 BPM praise"], count: 35, items: [{name:"Santhosama Irungal DMM140",type:"Audio Style (.aus) · 140 BPM",url:"#"},{name:"Gospel Audio Style Collection",type:"Audio Styles (.aus)",url:"#"}] },
         { title: "Davids Normal Styles", badge: "22 Normal Styles", description: "Arranger keyboard styles designed for gospel songs with variations and fill-ins.", supported: "4 variations, 3 intros, 3 endings & fill-ins", tags: ["Gospel fast praise", "Worship hymns", "Processionals", "Ballads (.sty)"], count: 21, items: [{name:"Piano Styles",type:"Normal style (.sty) · 72 BPM",url:"#"},{name:"Special Style Collection 5/8, 7/8, Freeplay",type:"Normal style (.sty) · 84 BPM",url:"#"}] },
         { title: "Davids I & E Series Styles, Voices & Data", badge: "23 I & E Resources", description: "I & E series styles specially voiced for Indian gospel worship songs.", supported: "PSR-I510, I500, I610, E583, E483 & E473", tags: ["Lightweight Indian styles", "Native Indian percussion", "User data (.usr)"], count: 23, items: [{name:"Indian Gospel Style Collection",type:"Styles (.sty)",url:"#"},{name:"I & E Keyboard User Data",type:"User data (.usr)",url:"#"}] },
-        { title: "Davids Premium Packs", badge: "Pack Format: .cpf only", description: "Premium packs for the low-cost ministry: real loops, Indian tones and multipads, Western gospel kit.", supported: "Compiled in .cpf format for your keyboard hardware ID (.n27)", tags: ["Real drum loops", "Indian solo tones", "Indian multipads", "Western gospel kit"], count: 5, items: [{name:"Full Worship & Indian Premium Pack",type:"Expansion pack (.cpf)",url:"#"},{name:"Western Gospel Kit",type:"Expansion pack (.cpf)",url:"#"}] },
+        { title: "Davids Premium Packs", badge: "Pack Format: .cpf only", description: "Premium packs for the low-cost ministry: real loops, Indian tones and multipads, Western gospel kit.", supported: "Compiled in .cpf format for your keyboard hardware ID (.n27)", tags: ["Real drum loops", "Indian solo tones", "Indian multipads", "Western gospel kit"], count: 3, items: [] },
         { title: "Casio Resources", badge: "715 Styles + Cloud Bucket", description: "Casio styles, voices, and data including the 715 Styles Mega Pack.", supported: "CT-X9000IN, CT-X8000IN & MZ-X500", tags: ["715 styles pack", "AC7 rhythms", "ZTN tones", "All-data backups (.all)"], count: 4, items: [{name:"Casio 715 Styles Mega Pack",type:"Styles (.ac7)",url:"#"},{name:"Casio All-Data Backup",type:"Backup (.all)",url:"#"}] },
         { title: "Korg Resources", badge: "Korg Cloud Bucket", description: "Korg packs, styles, voices, and data for Pa series arrangers.", supported: "Pa1000, Pa700, Pa600, Pa50 & Pa80", tags: [".SET collections", "PCG tones", "Indian gospel styles", "Global data"], count: 4, items: [{name:"Korg Pa Gospel SET Collection",type:".SET collection",url:"#"},{name:"Korg Indian Gospel Styles",type:"Styles and global data",url:"#"}] }
       ],
@@ -168,12 +170,12 @@
       {name:'Davids Indian Real loop 2',demo:'https://youtu.be/cb9obsE_SAI',price:600},
       {name:'Davids Indian HQ tone',demo:'https://youtu.be/uwcuOOlIiuI',price:600}
     ];
-    const premiumSection=document.querySelector('#premium'),premiumAnchor=premiumSection.querySelector('.premium-grid');
+    const premiumCard=[...document.querySelectorAll('.directory-card')].find(card=>card.querySelector('.directory-top h3')?.textContent==='Davids Premium Packs');
     const shop=document.createElement('div');
-    shop.className='wrap premium-shop';
-    shop.innerHTML='<div class="shop-head"><div><div class="section-kicker">Premium shop</div><h3>Davids Premium Packs</h3></div><p>Watch a demo, add packs to your cart, then send your order on WhatsApp.</p></div><div class="premium-products"></div>';
-    premiumAnchor.after(shop);
-    const productGrid=shop.querySelector('.premium-products'),cartButton=document.querySelector('#cartButton'),cartCount=document.createElement('span'),cartItems=new Set();
+    shop.className='premium-shop';
+    shop.innerHTML='<div class="shop-head"><div><div class="section-kicker">Premium shop</div><h3>Choose your packs</h3></div><p>₹600 each · Select packs, review the total, then checkout.</p></div><div class="premium-products"></div><div class="premium-cart-summary"><span class="cart-summary-text" aria-live="polite">0 packs selected · Total ₹0</span><button class="button checkout-button" type="button" disabled>Checkout</button></div>';
+    premiumCard.querySelector('.catalog').replaceChildren(shop);
+    const productGrid=shop.querySelector('.premium-products'),cartButton=document.querySelector('#cartButton'),checkoutButton=shop.querySelector('.checkout-button'),cartCount=document.createElement('span'),cartItems=new Set();
     cartCount.className='cart-badge';cartCount.id='cartCount';cartCount.setAttribute('aria-live','polite');cartCount.hidden=true;cartButton.style.position='relative';cartButton.append(cartCount);
     productGrid.innerHTML=premiumProducts.map((product,index)=>`<article class="premium-product"><h4>${product.name}</h4><p class="product-price">₹${product.price.toLocaleString('en-IN')} <span>each</span></p><div class="card-actions"><a class="mini-btn" href="${product.demo}" target="_blank" rel="noopener" aria-label="Watch demo for ${product.name}"><span aria-hidden="true">▶</span> Demo</a><button class="mini-btn product-cart" type="button" data-product="${index}" aria-pressed="false">Add to cart</button></div></article>`).join('');
     function syncCart(){
@@ -182,6 +184,8 @@
       const selected=[...cartItems].map(index=>premiumProducts[index].name);
       const total=[...cartItems].reduce((sum,index)=>sum+premiumProducts[index].price,0);
       document.querySelector('#orderNote').value=selected.length?`Selected packs (₹600 each): ${selected.join(', ')}. Total: ₹${total.toLocaleString('en-IN')}`:'';
+      shop.querySelector('.cart-summary-text').textContent=`${cartItems.size} pack${cartItems.size===1?'':'s'} selected · Total ₹${total.toLocaleString('en-IN')}`;
+      checkoutButton.disabled=cartItems.size===0;
       productGrid.querySelectorAll('.product-cart').forEach(button=>{
         const added=cartItems.has(Number(button.dataset.product));
         button.setAttribute('aria-pressed',String(added));button.textContent=added?'Remove':'Add to cart';
@@ -191,6 +195,7 @@
       const button=event.target.closest('.product-cart');if(!button)return;
       const index=Number(button.dataset.product);cartItems.has(index)?cartItems.delete(index):cartItems.add(index);syncCart();
     });
+    checkoutButton.addEventListener('click',()=>{syncCart();document.querySelector('#orderModal').classList.add('open');document.body.style.overflow='hidden'});
     cartButton.addEventListener('click',syncCart);
   </script>
 </body>
