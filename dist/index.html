@@ -26,7 +26,7 @@
     .resource-count{margin-left:auto;color:var(--muted);font-size:10px}
     .resource-tools .button{min-height:34px;padding:0 10px;font-size:10px}
     .review-source{display:inline-block;margin-top:7px;color:var(--gold2);font-size:9px;font-weight:700}
-    .premium-shop{margin-top:32px}.shop-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}.shop-head h3{margin:3px 0 0;font:800 19px Manrope,sans-serif}.shop-head p{margin:0;color:var(--muted);font-size:10px}.premium-products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.premium-product{min-width:0;padding:15px;border:1px solid #4a4026;border-radius:10px;background:#111317}.premium-product h4{min-height:38px;margin:0 0 10px;font:800 12px/1.45 Manrope,sans-serif}.premium-product .card-actions{flex-wrap:wrap}.premium-product .mini-btn{justify-content:center}.premium-product .product-cart{flex:1}.premium-product .product-cart[aria-pressed="true"]{border-color:#76632b;color:var(--gold2)}.cart-badge{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#e3bb4e;color:#16130a;font-size:9px;font-weight:800;line-height:17px}.light .premium-product{background:#fff;border-color:var(--line)}
+    .premium-shop{margin-top:32px}.shop-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}.shop-head h3{margin:3px 0 0;font:800 19px Manrope,sans-serif}.shop-head p{margin:0;color:var(--muted);font-size:10px}.premium-products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.premium-product{min-width:0;padding:15px;border:1px solid #4a4026;border-radius:10px;background:#111317}.premium-product h4{min-height:38px;margin:0 0 10px;font:800 12px/1.45 Manrope,sans-serif}.product-price{margin:0 0 12px;color:var(--gold2);font:800 16px Manrope,sans-serif}.product-price span{color:var(--muted);font:500 10px "DM Sans",sans-serif}.premium-product .card-actions{flex-wrap:wrap}.premium-product .mini-btn{justify-content:center}.premium-product .product-cart{flex:1}.premium-product .product-cart[aria-pressed="true"]{border-color:#76632b;color:var(--gold2)}.cart-badge{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#e3bb4e;color:#16130a;font-size:9px;font-weight:800;line-height:17px}.light .premium-product{background:#fff;border-color:var(--line)}
     @media(max-width:640px){.premium-shop{margin-top:23px}.shop-head{align-items:flex-start;flex-direction:column;gap:4px}.premium-products{grid-template-columns:1fr}.premium-product h4{min-height:0}.premium-product .mini-btn{min-height:34px}}
     @media(max-width:640px){.resource-tools{flex-wrap:wrap}.resource-tools select{flex:1;min-width:170px}.resource-count{order:3;width:100%;margin:0}}
   </style>
@@ -164,9 +164,9 @@
   </script>
   <script>
     const premiumProducts=[
-      {name:'Davids Indian Real loop 1',demo:'https://youtu.be/uUdAjN0uSP8'},
-      {name:'Davids Indian Real loop 2',demo:'https://youtu.be/cb9obsE_SAI'},
-      {name:'Davids Indian HQ tone',demo:'https://youtu.be/uwcuOOlIiuI'}
+      {name:'Davids Indian Real loop 1',demo:'https://youtu.be/uUdAjN0uSP8',price:600},
+      {name:'Davids Indian Real loop 2',demo:'https://youtu.be/cb9obsE_SAI',price:600},
+      {name:'Davids Indian HQ tone',demo:'https://youtu.be/uwcuOOlIiuI',price:600}
     ];
     const premiumSection=document.querySelector('#premium'),premiumAnchor=premiumSection.querySelector('.premium-grid');
     const shop=document.createElement('div');
@@ -175,12 +175,13 @@
     premiumAnchor.after(shop);
     const productGrid=shop.querySelector('.premium-products'),cartButton=document.querySelector('#cartButton'),cartCount=document.createElement('span'),cartItems=new Set();
     cartCount.className='cart-badge';cartCount.id='cartCount';cartCount.setAttribute('aria-live','polite');cartCount.hidden=true;cartButton.style.position='relative';cartButton.append(cartCount);
-    productGrid.innerHTML=premiumProducts.map((product,index)=>`<article class="premium-product"><h4>${product.name}</h4><div class="card-actions"><a class="mini-btn" href="${product.demo}" target="_blank" rel="noopener" aria-label="Watch demo for ${product.name}"><span aria-hidden="true">▶</span> Demo</a><button class="mini-btn product-cart" type="button" data-product="${index}" aria-pressed="false">Add to cart</button></div></article>`).join('');
+    productGrid.innerHTML=premiumProducts.map((product,index)=>`<article class="premium-product"><h4>${product.name}</h4><p class="product-price">₹${product.price.toLocaleString('en-IN')} <span>each</span></p><div class="card-actions"><a class="mini-btn" href="${product.demo}" target="_blank" rel="noopener" aria-label="Watch demo for ${product.name}"><span aria-hidden="true">▶</span> Demo</a><button class="mini-btn product-cart" type="button" data-product="${index}" aria-pressed="false">Add to cart</button></div></article>`).join('');
     function syncCart(){
       cartCount.textContent=String(cartItems.size);cartCount.hidden=cartItems.size===0;
       cartButton.setAttribute('aria-label',`Premium pack cart, ${cartItems.size} item${cartItems.size===1?'':'s'}`);
       const selected=[...cartItems].map(index=>premiumProducts[index].name);
-      document.querySelector('#orderNote').value=selected.length?`Selected packs: ${selected.join(', ')}`:'';
+      const total=[...cartItems].reduce((sum,index)=>sum+premiumProducts[index].price,0);
+      document.querySelector('#orderNote').value=selected.length?`Selected packs (₹600 each): ${selected.join(', ')}. Total: ₹${total.toLocaleString('en-IN')}`:'';
       productGrid.querySelectorAll('.product-cart').forEach(button=>{
         const added=cartItems.has(Number(button.dataset.product));
         button.setAttribute('aria-pressed',String(added));button.textContent=added?'Remove':'Add to cart';
