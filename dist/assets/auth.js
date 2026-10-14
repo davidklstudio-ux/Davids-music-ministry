@@ -26,11 +26,6 @@
       <div class="auth-content">
         <div class="auth-tabs" role="tablist" aria-label="Account access"><button class="auth-tab active" type="button" data-mode="signin" role="tab" aria-selected="true">Sign in</button><button class="auth-tab" type="button" data-mode="signup" role="tab" aria-selected="false">Create account</button></div>
         <form id="authForm" novalidate>
-          <div id="authProfileFields" class="auth-fields" hidden>
-            <div class="auth-field"><label for="authName">Full name</label><input id="authName" name="name" autocomplete="name" maxlength="100" placeholder="Your name"></div>
-            <div class="auth-field"><label for="authChurch">Church</label><input id="authChurch" name="church" autocomplete="organization" maxlength="120" placeholder="Church name"></div>
-            <div class="auth-field"><label for="authMobile">Mobile number</label><input id="authMobile" name="mobile" type="tel" autocomplete="tel" maxlength="24" placeholder="For ministry contact"></div>
-          </div>
           <div class="auth-fields">
             <div class="auth-field"><label for="authEmail">Email address</label><input id="authEmail" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></div>
             <div class="auth-field" id="authPasswordField"><label for="authPassword">Password</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></div>
@@ -39,7 +34,7 @@
           <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
           <button class="button auth-submit" id="authSubmit" type="submit">Sign in</button>
           <div class="auth-aux"><button class="auth-link" id="forgotPassword" type="button">Forgot password?</button><button class="auth-link" id="backToSignIn" type="button" hidden>Back to sign in</button><button class="auth-link" id="signOut" type="button" hidden>Sign out</button></div>
-          <p class="auth-privacy">Your name, church, and mobile number are saved with your account for ministry contact. Your password is handled by Supabase and is never stored by this site.</p>
+          <p class="auth-privacy">Your password is securely handled by Supabase and is never stored by this site.</p>
         </form>
         <div class="auth-account" id="authAccount" hidden></div>
       </div>
@@ -49,7 +44,6 @@
   const form = modal.querySelector('#authForm');
   const message = modal.querySelector('#authMessage');
   const submit = modal.querySelector('#authSubmit');
-  const profileFields = modal.querySelector('#authProfileFields');
   const passwordField = modal.querySelector('#authPasswordField');
   const confirmField = modal.querySelector('#authConfirmField');
   const emailInput = modal.querySelector('#authEmail');
@@ -75,8 +69,6 @@
       tab.classList.toggle('active', tab.dataset.mode === nextMode);
       tab.setAttribute('aria-selected', String(tab.dataset.mode === nextMode));
     });
-    profileFields.hidden = !isSignup;
-    [...profileFields.querySelectorAll('input')].forEach(input => { input.required = isSignup; });
     passwordField.hidden = isReset || isAccount;
     passwordInput.required = !isReset && !isAccount;
     passwordInput.autocomplete = isSignup || isRecovery ? 'new-password' : 'current-password';
@@ -104,8 +96,7 @@
     setMode(nextMode);
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
-    const target = nextMode === 'signup' ? '#authName' : '#authEmail';
-    modal.querySelector(target).focus();
+    emailInput.focus();
   }
 
   function closeModal() {
@@ -150,12 +141,7 @@
           email,
           password,
           options: {
-            emailRedirectTo: `${location.origin}${location.pathname}`,
-            data: {
-              full_name: modal.querySelector('#authName').value.trim(),
-              church: modal.querySelector('#authChurch').value.trim(),
-              mobile: modal.querySelector('#authMobile').value.trim()
-            }
+            emailRedirectTo: `${location.origin}${location.pathname}`
           }
         });
         if (error) throw error;
