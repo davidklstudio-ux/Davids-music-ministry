@@ -28,8 +28,8 @@
         <form id="authForm" novalidate>
           <div class="auth-fields">
             <div class="auth-field"><label for="authEmail">Email address</label><input id="authEmail" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></div>
-            <div class="auth-field" id="authPasswordField"><label for="authPassword">Password</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></div>
-            <div class="auth-field" id="authConfirmField" hidden><label for="authConfirm">Confirm new password</label><input id="authConfirm" name="confirm" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"></div>
+            <div class="auth-field" id="authPasswordField"><label for="authPassword">Password</label><div class="password-entry"><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"><button class="password-toggle" type="button" data-password-target="authPassword" aria-label="Show password" aria-pressed="false">Show</button></div></div>
+            <div class="auth-field" id="authConfirmField" hidden><label for="authConfirm">Confirm new password</label><div class="password-entry"><input id="authConfirm" name="confirm" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"><button class="password-toggle" type="button" data-password-target="authConfirm" aria-label="Show confirmation password" aria-pressed="false">Show</button></div></div>
           </div>
           <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
           <button class="button auth-submit" id="authSubmit" type="submit">Sign in</button>
@@ -49,6 +49,11 @@
   const emailInput = modal.querySelector('#authEmail');
   const passwordInput = modal.querySelector('#authPassword');
   const tabs = [...modal.querySelectorAll('.auth-tab')];
+  const visitorCount = document.createElement('span');
+  visitorCount.className = 'visitor-count';
+  visitorCount.innerHTML = 'Signed-in visits <strong aria-live="polite">…</strong>';
+  document.querySelector('.footer-bottom')?.append(visitorCount);
+  const visitorValue = visitorCount.querySelector('strong');
   const account = modal.querySelector('#authAccount');
   let mode = 'signin';
   let currentUser = null;
@@ -57,6 +62,20 @@
     message.textContent = text;
     message.className = `auth-message${kind ? ` ${kind}` : ''}`;
   }
+
+  async function refreshVisitCount() {
+    if (!visitorValue) return;
+    const { data, error } = await client.rpc('get_signed_in_visits');
+    visitorValue.textContent = error ? 'Unavailable' : Number(data).toLocaleString('en-IN');
+  }
+
+  async function recordSignedInVisit() {
+    if (!visitorValue) return;
+    const { data, error } = await client.rpc('increment_signed_in_visits');
+    visitorValue.textContent = error ? 'Unavailable' : Number(data).toLocaleString('en-IN');
+  }
+
+  refreshVisitCount();
 
   function setMode(nextMode) {
     mode = nextMode;
@@ -109,6 +128,14 @@
   modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
   tabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+  modal.querySelectorAll('.password-toggle').forEach(button => button.addEventListener('click', () => {
+    const input = modal.querySelector(`#${button.dataset.passwordTarget}`);
+    const showing = input.type === 'password';
+    input.type = showing ? 'text' : 'password';
+    button.textContent = showing ? 'Hide' : 'Show';
+    button.setAttribute('aria-label', `${showing ? 'Hide' : 'Show'} ${input.id === 'authConfirm' ? 'confirmation password' : 'password'}`);
+    button.setAttribute('aria-pressed', String(showing));
+  }));
   modal.querySelector('#forgotPassword').addEventListener('click', () => setMode('reset'));
   modal.querySelector('#backToSignIn').addEventListener('click', () => setMode('signin'));
   modal.querySelector('#signOut').addEventListener('click', async () => {
@@ -147,6 +174,7 @@
         if (error) throw error;
         if (data.session) {
           currentUser = data.user;
+          await recordSignedInVisit();
           closeModal();
         } else {
           setMode('signin');
@@ -167,6 +195,7 @@
         const { data, error } = await client.auth.signInWithPassword({ email, password });
         if (error) throw error;
         currentUser = data.user;
+        await recordSignedInVisit();
         closeModal();
       }
     } catch (error) {
