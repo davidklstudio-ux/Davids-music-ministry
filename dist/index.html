@@ -412,5 +412,38 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/auth.js"></script>
+  <script>
+    const keyboardModelSelect=document.querySelector('#keyboardModel');
+    const modelGroups=[
+      ['Genos',['Genos2','Genos']],
+      ['PSR-SX series',['PSR-SX920','PSR-SX900','PSR-SX720','PSR-SX700','PSR-SX600']],
+      ['PSR-S series',['PSR-S975','PSR-S970','PSR-S775','PSR-S770','PSR-S670']]
+    ];
+    const modelPlaceholder=new Option('Select your Yamaha model','');
+    modelPlaceholder.disabled=true;
+    modelPlaceholder.selected=true;
+    keyboardModelSelect.replaceChildren(modelPlaceholder);
+    modelGroups.forEach(([label,models])=>{
+      const group=document.createElement('optgroup');
+      group.label=label;
+      models.forEach(model=>group.append(new Option(model,model)));
+      keyboardModelSelect.append(group);
+    });
+
+    const premiumDirectoryCard=[...document.querySelectorAll('.directory-card')]
+      .find(card=>card.querySelector('.directory-top h3')?.textContent==='Davids Premium Packs');
+    if(premiumDirectoryCard)premiumDirectoryCard.id='david-premium-packs';
+    const oldExploreButton=document.querySelector('#openOrder');
+    const exploreButton=oldExploreButton.cloneNode(true);
+    oldExploreButton.replaceWith(exploreButton);
+    exploreButton.addEventListener('click',()=>{
+      document.querySelector('#clearResourceFilters').click();
+      if(!premiumDirectoryCard)return;
+      premiumDirectoryCard.classList.add('expanded');
+      premiumDirectoryCard.querySelector('.view-data').textContent='Hide data';
+      history.replaceState(null,'','#david-premium-packs');
+      window.scrollTo({top:premiumDirectoryCard.getBoundingClientRect().top+window.scrollY-86,behavior:'smooth'});
+    });
+  </script>
 </body>
 </html>
