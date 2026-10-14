@@ -129,6 +129,14 @@
     closeModal();
   });
 
+  document.addEventListener('click', event => {
+    const download = event.target.closest('#directory .catalog-item a:last-child, #featuredGrid .card-actions a:last-child');
+    if (!download || !download.href || download.href === '#' || currentUser) return;
+    event.preventDefault();
+    openModal('signin');
+    setMessage('Sign in to continue to the resource download.');
+  });
+
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (!form.reportValidity()) return;
