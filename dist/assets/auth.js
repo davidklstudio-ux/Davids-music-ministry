@@ -28,6 +28,7 @@
         <form id="authForm" novalidate>
           <div class="auth-fields">
             <div class="auth-field"><label for="authEmail">Email address</label><input id="authEmail" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></div>
+            <div class="auth-field" id="authPhoneField" hidden><label for="authPhone">Mobile number</label><input id="authPhone" name="phone" type="tel" autocomplete="tel" maxlength="32" placeholder="Your mobile number"></div>
             <div class="auth-field" id="authPasswordField"><label for="authPassword">Password</label><div class="password-entry"><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"><button class="password-toggle" type="button" data-password-target="authPassword" aria-label="Show password" aria-pressed="false">Show</button></div></div>
             <div class="auth-field" id="authConfirmField" hidden><label for="authConfirm">Confirm new password</label><div class="password-entry"><input id="authConfirm" name="confirm" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"><button class="password-toggle" type="button" data-password-target="authConfirm" aria-label="Show confirmation password" aria-pressed="false">Show</button></div></div>
           </div>
@@ -45,6 +46,8 @@
   const message = modal.querySelector('#authMessage');
   const submit = modal.querySelector('#authSubmit');
   const passwordField = modal.querySelector('#authPasswordField');
+  const phoneField = modal.querySelector('#authPhoneField');
+  const phoneInput = modal.querySelector('#authPhone');
   const confirmField = modal.querySelector('#authConfirmField');
   const emailInput = modal.querySelector('#authEmail');
   const passwordInput = modal.querySelector('#authPassword');
@@ -89,6 +92,8 @@
       tab.setAttribute('aria-selected', String(tab.dataset.mode === nextMode));
     });
     passwordField.hidden = isReset || isAccount;
+    phoneField.hidden = !(isSignup || isReset);
+    phoneInput.required = isSignup || isReset;
     passwordInput.required = !isReset && !isAccount;
     passwordInput.autocomplete = isSignup || isRecovery ? 'new-password' : 'current-password';
     confirmField.hidden = !isRecovery;
@@ -98,8 +103,11 @@
     modal.querySelector('#signOut').hidden = !isAccount;
     account.hidden = !isAccount;
     form.hidden = isAccount;
-    submit.textContent = isSignup ? 'Create account' : isReset ? 'Send reset email' : isRecovery ? 'Save new password' : 'Sign in';
-    modal.querySelector('#authTitle').textContent = isAccount ? 'Your account' : isReset ? 'Reset your password' : isRecovery ? 'Choose a new password' : 'Your ministry account';
+    submit.textContent = isSignup ? 'Create account' : isReset ? 'Continue to WhatsApp' : isRecovery ? 'Save new password' : 'Sign in';
+    modal.querySelector('#authTitle').textContent = isAccount ? 'Your account' : isReset ? 'Password help' : isRecovery ? 'Choose a new password' : 'Your ministry account';
+    modal.querySelector('.auth-privacy').textContent = isReset
+      ? 'Share only your registered email and mobile number with ministry support. Never send your password or verification codes.'
+      : 'Your password is securely handled by Supabase and is never stored by this site.';
     if (isAccount && currentUser) {
       const name = currentUser.user_metadata?.full_name || currentUser.email || 'Ministry member';
       account.innerHTML = `<strong>${escapeHtml(name)}</strong><small>${escapeHtml(currentUser.email || '')}</small>`;
@@ -168,7 +176,8 @@
           email,
           password,
           options: {
-            emailRedirectTo: `${location.origin}${location.pathname}`
+            emailRedirectTo: `${location.origin}${location.pathname}`,
+            data: { mobile_number: phoneInput.value.trim() }
           }
         });
         if (error) throw error;
@@ -178,12 +187,17 @@
           closeModal();
         } else {
           setMode('signin');
-          setMessage('Check your email to confirm your account, then sign in here.', 'success');
+          setMessage('Account created. Sign in with your email and password.', 'success');
         }
       } else if (mode === 'reset') {
-        const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}${location.pathname}#account-recovery` });
-        if (error) throw error;
-        setMessage('If an account exists for that email, a password reset link is on its way.', 'success');
+        const message = [
+          "Hello Karthick, I need help accessing my David's Music Ministry account.",
+          `Registered email: ${email}`,
+          `Registered mobile: ${phoneInput.value.trim()}`,
+          'I will not send my password or any verification code.'
+        ].join('\n');
+        window.open(`https://wa.me/919043622386?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+        setMessage('WhatsApp opened with your account details. Please send the message to request help.', 'success');
       } else if (mode === 'recovery') {
         const nextPassword = password;
         if (nextPassword !== modal.querySelector('#authConfirm').value) throw new Error('The passwords do not match.');
