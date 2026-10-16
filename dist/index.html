@@ -318,7 +318,7 @@
       link.href=url;
       if(url==='#')link.dataset.emptyLink='';else delete link.dataset.emptyLink;
     });
-    fetch('assets/youtube-playlists.json?v=6',{cache:'no-store'}).then(response=>response.json()).then(playlists=>{
+    fetch('assets/youtube-playlists.json?v=7',{cache:'no-store'}).then(response=>response.json()).then(playlists=>{
       const escapeHtml=value=>value.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
       for(const playlist of playlists){
         const card=[...document.querySelectorAll('.directory-card')].find(item=>item.querySelector('.directory-top h3')?.textContent===playlist.category);
