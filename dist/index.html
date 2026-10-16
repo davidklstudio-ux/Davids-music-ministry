@@ -50,6 +50,16 @@
     @media(max-width:640px){.auth-content{padding:16px}.auth-aux{align-items:flex-start;flex-direction:column}}
   </style>
   <style>
+    .auth-account{display:grid;gap:12px}
+    .auth-account-profile{padding-bottom:11px;border-bottom:1px solid var(--line)}
+    .auth-account-profile strong{font-size:13px}
+    .auth-account-profile small{display:block;margin-top:3px}
+    .auth-account .account-message{display:none;min-height:0;margin:0}
+    .auth-account .account-message:not(:empty){display:block}
+    .auth-signout{width:100%;justify-content:center}
+    .auth-signout:disabled{opacity:.65;cursor:wait}
+  </style>
+  <style>
     body.light{--gold:#805700;--gold2:#76510a;--green:#16734f}
     .light .pill,.light .notice,.light .notice a,.light .auth-tab.active{color:#f2d87e}
     .light .pack-card .pack-label{color:#76510a}
@@ -411,7 +421,7 @@
     syncCart();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/auth.js"></script>
+  <script src="assets/auth.js?v=2"></script>
   <script>
     const keyboardModelSelect=document.querySelector('#keyboardModel');
     const modelGroups=[

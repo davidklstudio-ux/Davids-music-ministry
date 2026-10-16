@@ -32,7 +32,6 @@
           </div>
           <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
           <button class="button auth-submit" id="authSubmit" type="submit">Sign in</button>
-          <div class="auth-aux"><button class="auth-link" id="signOut" type="button" hidden>Sign out</button></div>
           <p class="auth-privacy">Your password is securely handled by Supabase and is never stored by this site.</p>
         </form>
         <div class="auth-account" id="authAccount" hidden></div>
@@ -87,14 +86,13 @@
     passwordField.hidden = isAccount;
     passwordInput.required = !isAccount;
     passwordInput.autocomplete = isSignup ? 'new-password' : 'current-password';
-    modal.querySelector('#signOut').hidden = !isAccount;
     account.hidden = !isAccount;
     form.hidden = isAccount;
     submit.textContent = isSignup ? 'Create account' : 'Sign in';
     modal.querySelector('#authTitle').textContent = isAccount ? 'Your account' : 'Your ministry account';
     if (isAccount && currentUser) {
       const name = currentUser.user_metadata?.full_name || currentUser.email || 'Ministry member';
-      account.innerHTML = `<strong>${escapeHtml(name)}</strong><small>${escapeHtml(currentUser.email || '')}</small>`;
+      account.innerHTML = `<div class="auth-account-profile"><strong>${escapeHtml(name)}</strong><small>${escapeHtml(currentUser.email || '')}</small></div><p class="auth-message account-message" role="status" aria-live="polite"></p><button class="button secondary auth-signout" id="signOut" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>Sign out</button>`;
     }
     setMessage();
   }
@@ -107,7 +105,8 @@
     setMode(nextMode);
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
-    emailInput.focus();
+    if (nextMode === 'account') modal.querySelector('#signOut')?.focus();
+    else emailInput.focus();
   }
 
   function closeModal() {
@@ -118,6 +117,23 @@
   accountButton.addEventListener('click', () => openModal());
   modal.querySelector('#closeAuth').addEventListener('click', closeModal);
   modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
+  modal.addEventListener('click', async event => {
+    const button = event.target.closest('#signOut');
+    if (!button) return;
+    button.disabled = true;
+    const { error } = await client.auth.signOut();
+    if (error) {
+      const accountMessage = account.querySelector('.account-message');
+      accountMessage.textContent = error.message;
+      accountMessage.classList.add('error');
+      button.disabled = false;
+      return;
+    }
+    currentUser = null;
+    accountButton.title = 'Sign in or manage account';
+    accountButton.setAttribute('aria-label', accountButton.title);
+    closeModal();
+  });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
   tabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
   modal.querySelectorAll('.password-toggle').forEach(button => button.addEventListener('click', () => {
@@ -128,15 +144,6 @@
     button.setAttribute('aria-label', `${showing ? 'Hide' : 'Show'} password`);
     button.setAttribute('aria-pressed', String(showing));
   }));
-  modal.querySelector('#signOut').addEventListener('click', async () => {
-    const { error } = await client.auth.signOut();
-    if (error) return setMessage(error.message, 'error');
-    currentUser = null;
-    accountButton.title = 'Sign in or manage account';
-    accountButton.setAttribute('aria-label', accountButton.title);
-    closeModal();
-  });
-
   document.addEventListener('click', event => {
     const download = event.target.closest('#directory .catalog-item a:last-child, #featuredGrid .card-actions a:last-child');
     if (!download || !download.href || download.href === '#' || currentUser) return;
